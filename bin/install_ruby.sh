@@ -2,7 +2,7 @@
 
 # Install Ruby
 
-sudo apt-add-repository ppa:brightbox/ruby-ng
+sudo apt-add-repository --yes ppa:brightbox/ruby-ng
 sudo apt-get update
 sudo apt-get -y install ruby2.2 ruby2.2-dev
 
