@@ -228,6 +228,14 @@ frontend http-in
 #{ service_list.map{|service| frontend_service_text(service) }.join }
 
 #{ service_list.map{|service| backend_service_text(service) }.join }
+
+listen stats :1936
+\tmode http
+\tstats enable
+\tstats hide-version
+\tstats realm Haproxy\ Statistics
+\tstats uri /
+\tstats auth nike:#{ENV["HAPROXY_STATS_PASS"]}
 EOT
   end
 
@@ -250,13 +258,13 @@ defaults
 \ttimeout connect 5000
 \ttimeout client  50000
 \ttimeout server  50000
-\terrorfile 400 /etc/haproxy/errors/400.http
-\terrorfile 403 /etc/haproxy/errors/403.http
-\terrorfile 408 /etc/haproxy/errors/408.http
-\terrorfile 500 /etc/haproxy/errors/500.http
-\terrorfile 502 /etc/haproxy/errors/502.http
-\terrorfile 503 /etc/haproxy/errors/503.http
-\terrorfile 504 /etc/haproxy/errors/504.http
+\t# errorfile 400 /etc/haproxy/errors/400.http
+\t# errorfile 403 /etc/haproxy/errors/403.http
+\t# errorfile 408 /etc/haproxy/errors/408.http
+\t# errorfile 500 /etc/haproxy/errors/500.http
+\t# errorfile 502 /etc/haproxy/errors/502.http
+\t# errorfile 503 /etc/haproxy/errors/503.http
+\t# errorfile 504 /etc/haproxy/errors/504.http
 
 EOT
   end
