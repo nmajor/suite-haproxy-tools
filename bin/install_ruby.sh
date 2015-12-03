@@ -2,8 +2,9 @@
 
 # Install Ruby
 
+apt-get -y update
+apt-get -y install build-essential zlib1g-dev libssl-dev libreadline6-dev libyaml-dev
 cd /tmp
-RUN apt-get -y --force-yes install gcc make
 curl -O http://cache.ruby-lang.org/pub/ruby/ruby-2.2.3.tar.gz
 tar -xvzf ruby-2.2.3.tar.gz
 cd /tmp/ruby-2.2.3
