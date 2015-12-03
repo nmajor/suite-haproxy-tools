@@ -209,7 +209,7 @@ class HAProxy
       File.open(config_file, "w") do |file|
          file.write(config_text)
       end
-      # restart
+      restart
     end
   end
 
