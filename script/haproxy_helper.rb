@@ -214,7 +214,7 @@ class HAProxy
   end
 
   def restart
-    `sv reload haproxy`
+    `service haproxy restart`
   end
 
   def config_text
