@@ -12,6 +12,8 @@ cd "$PARENT_PATH"
 
 apt-get update
 apt-get -y install haproxy
+sed -i "s/ENABLED=0/ENABLED=1/" /etc/default/haproxy
+service haproxy start
 
 # rm -rf /etc/init.d/haproxy
 # cp ../script/haproxy.sh /etc/init.d/haproxy

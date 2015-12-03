@@ -7,4 +7,6 @@ rm -rf /sbin/haproxy_helper
 cp ../script/haproxy_helper.rb /sbin/haproxy_helper
 chmod +x /sbin/haproxy_helper
 
+haproxy_helper refresh_config
+
 cd "$PARENT_PATH/.."
