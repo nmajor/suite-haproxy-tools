@@ -242,16 +242,6 @@ global
 \tgroup haproxy
 \tdaemon
 
-
-
-\t# Default SSL material locations
-\tca-base /etc/ssl/certs
-\tcrt-base /etc/ssl/private
-
-\t# Default ciphers to use on SSL-enabled listening sockets.
-\t# For more information, see ciphers(1SSL).
-\tssl-default-bind-ciphers kEECDH+aRSA+AES:kRSA+AES:+AES256:RC4-SHA:!kEDH:!LOW:!EXP:!MD5:!aNULL:!eNULL
-
 defaults
 \tlog     global
 \tmode    http
