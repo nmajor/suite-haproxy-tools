@@ -234,14 +234,15 @@ EOT
    def default_config
 <<EOT
 global
-\tlog /dev/log    local0
-\tlog /dev/log    local1 notice
+\tlog 127.0.0.1 local0 notice
 \tchroot /var/lib/haproxy
 \tstats socket /run/haproxy/admin.sock mode 660 level admin
 \tstats timeout 30s
 \tuser haproxy
 \tgroup haproxy
 \tdaemon
+
+
 
 \t# Default SSL material locations
 \tca-base /etc/ssl/certs
@@ -266,6 +267,7 @@ defaults
 \terrorfile 502 /etc/haproxy/errors/502.http
 \terrorfile 503 /etc/haproxy/errors/503.http
 \terrorfile 504 /etc/haproxy/errors/504.http
+
 EOT
   end
 
@@ -282,8 +284,6 @@ backend #{backend_name(service)}
 \tmode http
 \tbalance roundrobin
 \toption forwardfor
-\thttp-request set-header X-Forwarded-Port %[dst_port]
-\thttp-request add-header X-Forwarded-Proto https if { ssl_fc }
 \toption httpchk HEAD / HTTP/1.1\\r\\nHost:localhost
 #{ service.healthy_nodes.map{|n| server_text(n) }.join }
 EOT
