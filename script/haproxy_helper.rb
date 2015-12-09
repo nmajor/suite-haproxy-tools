@@ -282,7 +282,7 @@ backend #{backend_name(service)}
 \tmode http
 \tbalance roundrobin
 \toption forwardfor
-\toption httpchk HEAD / HTTP/1.1\\r\\nHost:localhost
+\toption httpchk HEAD /health HTTP/1.1\\r\\nHost:localhost
 #{ service.healthy_nodes.map{|n| server_text(n) }.join }
 EOT
   end
