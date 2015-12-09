@@ -12,7 +12,12 @@ class Service
   end
 
   def host
-    "#{name}.com"
+    case name
+    when 'clickshame'
+      "api.#{name}.com"
+    else
+      "#{name}.com"
+    end
   end
 
   def healthy_nodes
