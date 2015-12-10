@@ -12,12 +12,7 @@ class Service
   end
 
   def host
-    case name
-    when 'clickshame'
-      "api.#{name}.com"
-    else
-      "#{name}.com"
-    end
+    "#{name}.com"
   end
 
   def healthy_nodes
@@ -276,7 +271,7 @@ EOT
 
   def frontend_service_text service
 <<EOT
-\tacl #{acl_name(service)} hdr(host) -i #{service.host}
+\tacl #{acl_name(service)} hdr_sub(host) -i #{service.host}
 \tuse_backend #{backend_name(service)} if #{acl_name(service)}
 EOT
   end
