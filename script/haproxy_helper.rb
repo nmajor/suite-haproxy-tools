@@ -273,11 +273,11 @@ EOT
   end
 
   def acl_text service
-    "\tacl #{acl_name(service)} hdr_end(host) -i #{service.host}"
+    "\tacl #{acl_name(service)} hdr_end(host) -i #{service.host}\n"
   end
 
   def use_backend_text service
-    "\tuse_backend #{backend_name(service)} if #{acl_name(service)}"
+    "\tuse_backend #{backend_name(service)} if #{acl_name(service)}\n"
   end
 
   def backend_service_text
@@ -308,9 +308,11 @@ EOT
   end
 end
 
-case ARGV[0]
-when "refresh_config"
-  HAProxy.new(list: ServiceList.new.services).refresh_config
-when "deregister_nodes"
-  ServiceList.new.services.each{|service| service.deregister_unhealthy_nodes }
-end
+HAProxy.new(list: ServiceList.new.services).refresh_config
+
+# case ARGV[0]
+# when "refresh_config"
+#   HAProxy.new(list: ServiceList.new.services).refresh_config
+# when "deregister_nodes"
+#   ServiceList.new.services.each{|service| service.deregister_unhealthy_nodes }
+# end
