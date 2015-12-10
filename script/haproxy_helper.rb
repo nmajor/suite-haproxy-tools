@@ -224,10 +224,9 @@ class HAProxy
 frontend http-in
 \tbind *:80
 \tmode http
+#{ frontend_service_text }
 
-#{ service_list.map{|service| frontend_service_text(service) }.join }
-
-#{ service_list.map{|service| backend_service_text(service) }.join }
+#{ backend_service_text }
 
 listen stats :1936
 \tmode http
@@ -269,14 +268,23 @@ defaults
 EOT
   end
 
-  def frontend_service_text service
-<<EOT
-\tacl #{acl_name(service)} hdr_end(host) -i #{service.host}
-\tuse_backend #{backend_name(service)} if #{acl_name(service)}
-EOT
+  def frontend_service_text
+    ( service_list.map{|service| acl_text(service) } + service_list.map{|service| use_backend_text(service) } ).join
   end
 
-  def backend_service_text service
+  def acl_text service
+    "\tacl #{acl_name(service)} hdr_end(host) -i #{service.host}"
+  end
+
+  def use_backend_text service
+    "\tuse_backend #{backend_name(service)} if #{acl_name(service)}"
+  end
+
+  def backend_service_text
+    service_list.map{|service| backend_service_text(service) }.join
+  end
+
+  def backend_text service
 <<EOT
 backend #{backend_name(service)}
 \tmode http
