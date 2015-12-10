@@ -271,7 +271,7 @@ EOT
 
   def frontend_service_text service
 <<EOT
-\tacl #{acl_name(service)} hdr_sub(host) -i #{service.host}
+\tacl #{acl_name(service)} hdr_end(host) -i #{service.host}
 \tuse_backend #{backend_name(service)} if #{acl_name(service)}
 EOT
   end
