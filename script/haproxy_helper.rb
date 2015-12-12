@@ -296,7 +296,9 @@ EOT
   end
 
   def server_text service_node
-    "\tserver #{service_node.id} #{service_node.address}:#{service_node.port} check\n"
+    # "\tserver #{service_node.id} #{service_node.address}:#{service_node.port} check inter 5000 fastinter 1000 fall 1 rise 1 weight 1 maxconn 100\n"
+    "\tserver #{service_node.id} #{service_node.address}:#{service_node.port} check inter 5000 fastinter 1000 fall 1 rise 1 weight 1\n"
+    # "\tserver #{service_node.id} #{service_node.address}:#{service_node.port} check\n"
   end
 
   def backend_name service
