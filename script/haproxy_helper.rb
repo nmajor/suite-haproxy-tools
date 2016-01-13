@@ -33,7 +33,7 @@ class Service
 
   def host_map
     {
-      "concept" => "concept.nmajor.com"
+      "concept" => "api.concept.nmajor.com"
     }
   end
 end
