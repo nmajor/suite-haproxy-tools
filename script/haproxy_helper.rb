@@ -312,9 +312,11 @@ end
 
 HAProxy.new(list: ServiceList.new.services).refresh_config
 
-# case ARGV[0]
-# when "refresh_config"
-#   HAProxy.new(list: ServiceList.new.services).refresh_config
-# when "deregister_nodes"
-#   ServiceList.new.services.each{|service| service.deregister_unhealthy_nodes }
-# end
+case ARGV[0]
+when "refresh_config"
+  HAProxy.new(list: ServiceList.new.services).refresh_config
+when "deregister_nodes"
+  ServiceList.new.services.each{|service| service.deregister_unhealthy_nodes }
+else
+  HAProxy.new(list: ServiceList.new.services).refresh_config
+end
