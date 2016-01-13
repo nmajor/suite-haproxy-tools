@@ -51,7 +51,9 @@ class ServiceNode
   end
 
   def deregister!
-    Request.new("/agent/service/deregister/#{id}", method: "post").send if !healthy?
+    response = Request.new("/agent/service/deregister/#{id}", method: "post").send if !healthy?
+    puts response
+    response
   end
 end
 
@@ -79,7 +81,7 @@ class Check
   end
 
   def failed?
-    ["critical"].include?(status) && output.include?("request canceled while waiting for connection")
+    ["critical"].include?(status)
   end
 end
 
@@ -310,12 +312,13 @@ EOT
   end
 end
 
-HAProxy.new(list: ServiceList.new.services).refresh_config
+# HAProxy.new(list: ServiceList.new.services).refresh_config
 
 case ARGV[0]
 when "refresh_config"
   HAProxy.new(list: ServiceList.new.services).refresh_config
 when "deregister_nodes"
+  puts ServiceList.new.services.map{|c| {c.name => c.nodes.map{|x| x.checks.map{|d| d.status + " " + d.output }}}}.inspect
   ServiceList.new.services.each{|service| service.deregister_unhealthy_nodes }
 else
   HAProxy.new(list: ServiceList.new.services).refresh_config
