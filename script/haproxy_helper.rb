@@ -3,6 +3,10 @@
 require 'net/http'
 require 'json'
 
+service_name_map = {
+  :concept => ''
+}
+
 class Service
   attr_accessor :name, :nodes
 
@@ -12,7 +16,7 @@ class Service
   end
 
   def host
-    "#{name}.com"
+    host_map[name] || "#{name}.com"
   end
 
   def healthy_nodes
@@ -25,6 +29,12 @@ class Service
 
   def deregister_unhealthy_nodes
     unhealthy_nodes.each{|n| n.deregister! }
+  end
+
+  def host_map
+    {
+      "concept" => "concept.nmajor.com"
+    }
   end
 end
 
@@ -318,7 +328,6 @@ case ARGV[0]
 when "refresh_config"
   HAProxy.new(list: ServiceList.new.services).refresh_config
 when "deregister_nodes"
-  puts ServiceList.new.services.map{|c| {c.name => c.nodes.map{|x| x.checks.map{|d| d.status + " " + d.output }}}}.inspect
   ServiceList.new.services.each{|service| service.deregister_unhealthy_nodes }
 else
   HAProxy.new(list: ServiceList.new.services).refresh_config
