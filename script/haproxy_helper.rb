@@ -256,7 +256,7 @@ EOT
 global
 \tlog 127.0.0.1 local0 notice
 \tchroot /var/lib/haproxy
-\tstats socket /run/haproxy/admin.sock mode 660 level admin
+\tstats socket /run/haproxy.sock mode 660 level admin
 \tstats timeout 30s
 \tuser haproxy
 \tgroup haproxy
