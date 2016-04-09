@@ -34,7 +34,8 @@ class Service
   def host_map
     {
       "concept" => "api.concept.nmajor.com",
-      "dathobby" => "api.dathobby.com"
+      "dathobby" => "api.dathobby.com",
+      "emailgate" => "emailgate.nmajor.com",
     }
   end
 end
