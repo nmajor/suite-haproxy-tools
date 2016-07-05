@@ -35,7 +35,7 @@ class Service
     {
       "concept" => "api.concept.nmajor.com",
       "dathobby" => "api.dathobby.com",
-      "emailgate" => "myemailbooks.com",
+      "emailgate" => "myemailbook.com",
     }
   end
 end
