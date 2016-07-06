@@ -246,10 +246,8 @@ frontend https-in
 \tmode tcp
 \toption tcplog
 #{ frontend_service_text_https }
-
 #{ backend_service_text }
 #{ backend_service_text_https }
-
 listen stats :1936
 \tmode http
 \tstats enable
@@ -327,7 +325,6 @@ backend #{backend_name(service)}
 \tmode http
 \tbalance roundrobin
 \toption forwardfor
-\toption httpchk HEAD /health HTTP/1.1\\r\\nHost:localhost
 #{ service.healthy_nodes.map{|n| server_text(n) }.join }
 EOT
   end
@@ -338,7 +335,6 @@ backend #{backend_name(service)}_https
 \tmode tcp
 \tbalance roundrobin
 \toption tcplog
-\toption httpchk HEAD /health HTTP/1.1\\r\\nHost:localhost
 #{ service.healthy_nodes.map{|n| server_text_https(n) }.join }
 EOT
   end
