@@ -284,11 +284,7 @@ EOT
   end
 
   def frontend_service_text
-    ( service_list.map{|service| acl_text(service) }
-    + service_list.map{|service| acl_text_https(service) }
-    + service_list.map{|service| use_backend_text(service) }
-    + service_list.map{|service| use_backend_text_https(service) }
-    ).join
+    ( service_list.map{|service| acl_text(service) } + service_list.map{|service| acl_text_https(service) } + service_list.map{|service| use_backend_text(service) } + service_list.map{|service| use_backend_text_https(service) } ).join
   end
 
   def acl_text service
