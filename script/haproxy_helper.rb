@@ -266,8 +266,8 @@ global
 
 defaults
 \tlog     global
-\tmode    http
-\toption  httplog
+\tmode    tcp
+\toption  tcplog
 \toption  dontlognull
 \ttimeout connect 5000
 \ttimeout client  50000
