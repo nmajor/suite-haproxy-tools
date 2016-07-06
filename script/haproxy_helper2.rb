@@ -245,11 +245,9 @@ frontend https-in
 \tbind *:443
 \tmode tcp
 \toption tcplog
-
 #{ frontend_service_text_https }
 
 #{ backend_service_text }
-
 #{ backend_service_text_https }
 
 listen stats :1936
@@ -341,13 +339,19 @@ backend #{backend_name(service)}_https
 \tbalance roundrobin
 \toption tcplog
 \toption httpchk HEAD /health HTTP/1.1\\r\\nHost:localhost
-#{ service.healthy_nodes.map{|n| server_text(n) }.join }
+#{ service.healthy_nodes.map{|n| server_text_https(n) }.join }
 EOT
   end
 
   def server_text service_node
     # "\tserver #{service_node.id} #{service_node.address}:#{service_node.port} check inter 5000 fastinter 1000 fall 1 rise 1 weight 1 maxconn 100\n"
-    "\tserver #{service_node.id} #{service_node.address}:#{service_node.port} check inter 5000 fastinter 1000 fall 1 rise 1 weight 1\n"
+    "\tserver #{service_node.id} #{service_node.address}:80 check inter 5000 fastinter 1000 fall 1 rise 1 weight 1\n"
+    # "\tserver #{service_node.id} #{service_node.address}:#{service_node.port} check\n"
+  end
+
+  def server_text_https service_node
+    # "\tserver #{service_node.id} #{service_node.address}:#{service_node.port} check inter 5000 fastinter 1000 fall 1 rise 1 weight 1 maxconn 100\n"
+    "\tserver #{service_node.id} #{service_node.address}:443 check inter 5000 fastinter 1000 fall 1 rise 1 weight 1\n"
     # "\tserver #{service_node.id} #{service_node.address}:#{service_node.port} check\n"
   end
 
