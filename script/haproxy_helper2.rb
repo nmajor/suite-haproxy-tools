@@ -235,14 +235,21 @@ class HAProxy
 @config_text ||= <<EOT
 #{default_config}
 
-frontend tcp-in
+frontend http-in
 \tbind *:80
 \tbind *:443
-\tmode tcp
-\toption  tcplog
+\tmode http
 #{ frontend_service_text }
 
 #{ backend_service_text }
+
+listen stats :1936
+\tmode http
+\tstats enable
+\tstats hide-version
+\tstats realm Haproxy\ Statistics
+\tstats uri /
+\tstats auth nike:#{ENV["HAPROXY_STATS_PASS"]}
 EOT
   end
 
@@ -259,8 +266,8 @@ global
 
 defaults
 \tlog     global
-\tmode    tcp
-\toption  tcplog
+\tmode    http
+\toption  httplog
 \toption  dontlognull
 \ttimeout connect 5000
 \ttimeout client  50000
@@ -277,27 +284,51 @@ EOT
   end
 
   def frontend_service_text
-    ( service_list.map{|service| acl_text(service) } + service_list.map{|service| use_backend_text(service) } ).join
+    ( service_list.map{|service| acl_text(service) }
+    + service_list.map{|service| acl_text_https(service) }
+    + service_list.map{|service| use_backend_text(service) }
+    + service_list.map{|service| use_backend_text_https(service) }
+    ).join
   end
 
   def acl_text service
-    "\tacl #{acl_name(service)} hdr_end(host) -i #{service.host}\n"
+    "\tacl #{acl_name(service)} hdr_end(host) -i #{service.host} dst_port 80\n"
+  end
+
+  def acl_text_https service
+    "\tacl #{acl_name(service)}_https hdr_end(host) -i #{service.host} dst_port 443\n"
   end
 
   def use_backend_text service
     "\tuse_backend #{backend_name(service)} if #{acl_name(service)}\n"
   end
 
+  def use_backend_text_https service
+    "\tuse_backend #{backend_name(service)}_https if #{acl_name(service)}_https\n"
+  end
+
   def backend_service_text
-    service_list.map{|service| backend_text(service) }.join
+    ( service_list.map{|service| backend_text(service) } + service_list.map{|service| backend_text_https(service) } ).join
   end
 
   def backend_text service
 <<EOT
 backend #{backend_name(service)}
+\tmode http
+\tbalance roundrobin
+\toption forwardfor
+\toption httpchk HEAD /health HTTP/1.1\\r\\nHost:localhost
+#{ service.healthy_nodes.map{|n| server_text(n) }.join }
+EOT
+  end
+
+  def backend_text_https service
+<<EOT
+backend #{backend_name(service)}_https
 \tmode tcp
 \tbalance roundrobin
 \toption tcplog
+\toption httpchk HEAD /health HTTP/1.1\\r\\nHost:localhost
 #{ service.healthy_nodes.map{|n| server_text(n) }.join }
 EOT
   end
