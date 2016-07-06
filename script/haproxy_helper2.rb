@@ -292,16 +292,16 @@ EOT
   end
 
   def frontend_service_text_https
-    ( service_list.map{|service| acl_text(service) } + service_list.map{|service| use_backend_text_https(service) } ).join
+    ( service_list.map{|service| acl_text_https(service) } + service_list.map{|service| use_backend_text_https(service) } ).join
   end
 
   def acl_text service
     "\tacl #{acl_name(service)} hdr_end(host) -i #{service.host}\n"
   end
 
-  # def acl_text_https service
-  #   "\tacl #{acl_name(service)}_https hdr_end(host) -i #{service.host} dst_port 443\n"
-  # end
+  def acl_text_https service
+    "\tacl #{acl_name(service)}_https hdr_end(host) -i #{service.host}\n"
+  end
 
   def use_backend_text service
     "\tuse_backend #{backend_name(service)} if #{acl_name(service)}\n"
