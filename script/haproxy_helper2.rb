@@ -237,11 +237,17 @@ class HAProxy
 
 frontend http-in
 \tbind *:80
-\tbind *:443
 \tmode http
 #{ frontend_service_text }
 
+frontend https-in
+\tbind *:443
+\tmode http
+#{ frontend_service_text_https }
+
 #{ backend_service_text }
+
+#{ backend_service_text_https }
 
 listen stats :1936
 \tmode http
@@ -284,7 +290,11 @@ EOT
   end
 
   def frontend_service_text
-    ( service_list.map{|service| acl_text(service) } + service_list.map{|service| acl_text_https(service) } + service_list.map{|service| use_backend_text(service) } + service_list.map{|service| use_backend_text_https(service) } ).join
+    ( service_list.map{|service| acl_text(service) } + service_list.map{|service| use_backend_text(service) } ).join
+  end
+
+  def frontend_service_text_https
+    ( service_list.map{|service| acl_text_https(service) } + service_list.map{|service| use_backend_text_https(service) } ).join
   end
 
   def acl_text service
