@@ -314,7 +314,11 @@ EOT
   end
 
   def backend_service_text
-    ( service_list.map{|service| backend_text(service) } + service_list.map{|service| backend_text_https(service) } ).join
+    ( service_list.map{|service| backend_text(service) } ).join
+  end
+
+  def backend_service_text_https
+    ( service_list.map{|service| backend_text_https(service) } ).join
   end
 
   def backend_text service
