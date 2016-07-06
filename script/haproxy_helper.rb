@@ -244,7 +244,8 @@ frontend http-in
 #{ backend_service_text }
 
 listen stats :1936
-\tmode http
+\toption tcplog
+\tmode tcp
 \tstats enable
 \tstats hide-version
 \tstats realm Haproxy\ Statistics
