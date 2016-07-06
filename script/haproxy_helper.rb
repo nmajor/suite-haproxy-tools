@@ -238,7 +238,7 @@ class HAProxy
 frontend http-in
 \tbind *:80
 \tbind *:443
-\tmode tcp
+\tmode http
 #{ frontend_service_text }
 
 #{ backend_service_text }
@@ -266,8 +266,8 @@ global
 
 defaults
 \tlog     global
-\tmode    tcp
-\toption  tcplog
+\tmode    http
+\toption  httplog
 \toption  dontlognull
 \ttimeout connect 5000
 \ttimeout client  50000
