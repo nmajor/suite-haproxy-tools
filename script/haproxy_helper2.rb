@@ -239,6 +239,7 @@ frontend tcp-in
 \tbind *:80
 \tbind *:443
 \tmode tcp
+\toption  tcplog
 #{ frontend_service_text }
 
 #{ backend_service_text }
@@ -297,7 +298,6 @@ backend #{backend_name(service)}
 \tmode tcp
 \tbalance roundrobin
 \toption tcplog
-\toption httpchk HEAD /health HTTP/1.1\\r\\nHost:localhost
 #{ service.healthy_nodes.map{|n| server_text(n) }.join }
 EOT
   end
