@@ -236,8 +236,7 @@ class HAProxy
 #{default_config}
 
 frontend http-in
-\tbind *:80
-\tbind *:443
+\tbind *:80, *:443
 \tmode http
 #{ frontend_service_text }
 
