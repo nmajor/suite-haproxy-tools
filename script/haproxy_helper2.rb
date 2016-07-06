@@ -238,11 +238,14 @@ class HAProxy
 frontend http-in
 \tbind *:80
 \tmode http
+\toption httplog
 #{ frontend_service_text }
 
 frontend https-in
 \tbind *:443
-\tmode http
+\tmode tcp
+\toption tcplog
+
 #{ frontend_service_text_https }
 
 #{ backend_service_text }
@@ -285,7 +288,6 @@ defaults
 \t# errorfile 502 /etc/haproxy/errors/502.http
 \t# errorfile 503 /etc/haproxy/errors/503.http
 \t# errorfile 504 /etc/haproxy/errors/504.http
-
 EOT
   end
 
@@ -294,16 +296,16 @@ EOT
   end
 
   def frontend_service_text_https
-    ( service_list.map{|service| acl_text_https(service) } + service_list.map{|service| use_backend_text_https(service) } ).join
+    ( service_list.map{|service| acl_text(service) } + service_list.map{|service| use_backend_text_https(service) } ).join
   end
 
   def acl_text service
-    "\tacl #{acl_name(service)} hdr_end(host) -i #{service.host} dst_port 80\n"
+    "\tacl #{acl_name(service)} hdr_end(host) -i #{service.host}\n"
   end
 
-  def acl_text_https service
-    "\tacl #{acl_name(service)}_https hdr_end(host) -i #{service.host} dst_port 443\n"
-  end
+  # def acl_text_https service
+  #   "\tacl #{acl_name(service)}_https hdr_end(host) -i #{service.host} dst_port 443\n"
+  # end
 
   def use_backend_text service
     "\tuse_backend #{backend_name(service)} if #{acl_name(service)}\n"
