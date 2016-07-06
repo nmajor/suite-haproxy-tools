@@ -238,14 +238,14 @@ class HAProxy
 frontend http-in
 \tbind *:80
 \tbind *:443
-\tmode http
+\tmode tcp
+\toption tcplog
 #{ frontend_service_text }
 
 #{ backend_service_text }
 
 listen stats :1936
-\toption tcplog
-\tmode tcp
+\tmode http
 \tstats enable
 \tstats hide-version
 \tstats realm Haproxy\ Statistics
