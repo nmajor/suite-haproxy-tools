@@ -235,17 +235,16 @@ class HAProxy
 @config_text ||= <<EOT
 #{default_config}
 
-frontend tcp-in
+frontend http-in
 \tbind *:80
 \tbind *:443
-\tmode tcp
+\tmode http
 #{ frontend_service_text }
 
 #{ backend_service_text }
 
 listen stats :1936
 \tmode http
-\toption httplog
 \tstats enable
 \tstats hide-version
 \tstats realm Haproxy\ Statistics
@@ -267,8 +266,8 @@ global
 
 defaults
 \tlog     global
-\tmode    tcp
-\toption  tcplog
+\tmode    http
+\toption  httplog
 \toption  dontlognull
 \ttimeout connect 5000
 \ttimeout client  50000
@@ -303,9 +302,9 @@ EOT
   def backend_text service
 <<EOT
 backend #{backend_name(service)}
-\tmode tcp
+\tmode http
 \tbalance roundrobin
-\toption tcplog
+\toption forwardfor
 \toption httpchk HEAD /health HTTP/1.1\\r\\nHost:localhost
 #{ service.healthy_nodes.map{|n| server_text(n) }.join }
 EOT
