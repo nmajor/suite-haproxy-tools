@@ -315,8 +315,8 @@ EOT
 
   def use_backend_text_https service
 <<EOT
-\tuse_backend #{backend_name(service)} if #{acl_name(service)}_https
-\tuse_backend #{backend_name(service)} if #{acl_name(service)}_https_www
+\tuse_backend #{backend_name(service)}_https if #{acl_name(service)}_https
+\tuse_backend #{backend_name(service)}_https if #{acl_name(service)}_https_www
 EOT
   end
 
