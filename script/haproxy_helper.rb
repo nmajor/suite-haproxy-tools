@@ -31,6 +31,12 @@ class Service
     unhealthy_nodes.each{|n| n.deregister! }
   end
 
+  def ssl_map
+    return {
+      "emailgate" => true,
+    }
+  end
+
   def host_map
     {
       "concept" => "api.concept.nmajor.com",
@@ -235,14 +241,18 @@ class HAProxy
 @config_text ||= <<EOT
 #{default_config}
 
-frontend http-in
-\tbind *:80
-\tbind *:443
+frontend http-in *:80
 \tmode http
+\toption httplog
 #{ frontend_service_text }
 
+frontend https-in *:443
+\toption socket-stats
+\ttcp-request inspect-delay 5s
+\ttcp-request content accept if { req_ssl_hello_type 1 }
+#{ frontend_service_text_https }
 #{ backend_service_text }
-
+#{ backend_service_text_https }
 listen stats :1936
 \tmode http
 \tstats enable
@@ -266,8 +276,6 @@ global
 
 defaults
 \tlog     global
-\tmode    http
-\toption  httplog
 \toption  dontlognull
 \ttimeout connect 5000
 \ttimeout client  50000
@@ -279,7 +287,6 @@ defaults
 \t# errorfile 502 /etc/haproxy/errors/502.http
 \t# errorfile 503 /etc/haproxy/errors/503.http
 \t# errorfile 504 /etc/haproxy/errors/504.http
-
 EOT
   end
 
@@ -287,16 +294,38 @@ EOT
     ( service_list.map{|service| acl_text(service) } + service_list.map{|service| use_backend_text(service) } ).join
   end
 
+  def frontend_service_text_https
+    ( service_list.map{|service| acl_text_https(service) } + service_list.map{|service| use_backend_text_https(service) } ).join
+  end
+
   def acl_text service
     "\tacl #{acl_name(service)} hdr_end(host) -i #{service.host}\n"
+  end
+
+  def acl_text_https service
+<<EOT
+\tacl #{acl_name(service)}_https req_ssl_sni -i myemailbook.com
+\tacl #{acl_name(service)}_https_www req_ssl_sni -i www.myemailbook.com
+EOT
   end
 
   def use_backend_text service
     "\tuse_backend #{backend_name(service)} if #{acl_name(service)}\n"
   end
 
+  def use_backend_text_https service
+<<EOT
+\tuse_backend #{backend_name(service)}_https if #{acl_name(service)}_https
+\tuse_backend #{backend_name(service)}_https if #{acl_name(service)}_https_www
+EOT
+  end
+
   def backend_service_text
-    service_list.map{|service| backend_text(service) }.join
+    ( service_list.map{|service| backend_text(service) } ).join
+  end
+
+  def backend_service_text_https
+    ( service_list.map{|service| backend_text_https(service) } ).join
   end
 
   def backend_text service
@@ -305,15 +334,35 @@ backend #{backend_name(service)}
 \tmode http
 \tbalance roundrobin
 \toption forwardfor
-\toption httpchk HEAD /health HTTP/1.1\\r\\nHost:localhost
 #{ service.healthy_nodes.map{|n| server_text(n) }.join }
+EOT
+  end
+
+  def backend_text_https service
+<<EOT
+backend #{backend_name(service)}_https
+\tmode tcp
+\tstick-table type binary len 32 size 30k expire 30m
+\tacl clienthello req_ssl_hello_type 1
+\tacl serverhello rep_ssl_hello_type 2
+\ttcp-request inspect-delay 5s
+\ttcp-request content accept if clienthello
+\ttcp-response content accept if serverhello
+\tstick on payload_lv(43,1) if clienthello
+\tstick store-response payload_lv(43,1) if serverhello
+\toption httpchk HEAD /health HTTP/1.1\\r\\nHost:localhost
+#{ service.healthy_nodes.map{|n| server_text_https(n) }.join }
 EOT
   end
 
   def server_text service_node
     # "\tserver #{service_node.id} #{service_node.address}:#{service_node.port} check inter 5000 fastinter 1000 fall 1 rise 1 weight 1 maxconn 100\n"
-    "\tserver #{service_node.id} #{service_node.address}:#{service_node.port} check inter 5000 fastinter 1000 fall 1 rise 1 weight 1\n"
+    "\tserver #{service_node.id} #{service_node.address}:80 check inter 5000 fastinter 1000 fall 1 rise 1 weight 1\n"
     # "\tserver #{service_node.id} #{service_node.address}:#{service_node.port} check\n"
+  end
+
+  def server_text_https service_node
+    "\tserver #{service_node.id} #{service_node.address}:443 check port 80 inter 5000 fastinter 1000 fall 1 rise 1 weight 1\n"
   end
 
   def backend_name service
