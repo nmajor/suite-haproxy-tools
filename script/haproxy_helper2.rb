@@ -310,7 +310,7 @@ EOT
   end
 
   def use_backend_text service
-    "\tuse_backend #{backend_name(service)}_https if #{acl_name(service)}_https\n"
+    "\tuse_backend #{backend_name(service)} if #{acl_name(service)}\n"
   end
 
   def use_backend_text_https service
@@ -350,7 +350,7 @@ backend #{backend_name(service)}_https
 \ttcp-response content accept if serverhello
 \tstick on payload_lv(43,1) if clienthello
 \tstick store-response payload_lv(43,1) if serverhello
-\toption httpchk HEAD /health HTTP/1.1\r\nHost:localhost
+\toption httpchk HEAD /health HTTP/1.1\\r\\nHost:localhost
 #{ service.healthy_nodes.map{|n| server_text_https(n) }.join }
 EOT
   end
