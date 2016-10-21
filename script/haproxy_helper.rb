@@ -31,6 +31,10 @@ class Service
     unhealthy_nodes.each{|n| n.deregister! }
   end
 
+  def has_admin?
+    admin_map[name] || false;
+  end
+
   def ssl_map
     return {
       "emailgate" => true,
@@ -42,6 +46,12 @@ class Service
       "concept" => "api.concept.nmajor.com",
       "dathobby" => "api.dathobby.com",
       "emailgate" => "myemailbook.com",
+    }
+  end
+
+  def admin_map
+    {
+      "emailgate" => true,
     }
   end
 end
@@ -303,9 +313,11 @@ EOT
   end
 
   def acl_text_https service
+  admin_acl = service.has_admin? ? "\tacl #{acl_name(service)}_https_admin req_ssl_sni -i admin.#{service.host}" : nil
 <<EOT
-\tacl #{acl_name(service)}_https req_ssl_sni -i myemailbook.com
-\tacl #{acl_name(service)}_https_www req_ssl_sni -i www.myemailbook.com
+\tacl #{acl_name(service)}_https req_ssl_sni -i #{service.host}
+\tacl #{acl_name(service)}_https_www req_ssl_sni -i www.#{service.host}
+#{admin_acl}
 EOT
   end
 
@@ -314,9 +326,11 @@ EOT
   end
 
   def use_backend_text_https service
+    admin_backend_text =  service.has_admin? ? "\tuse_backend #{backend_name(service)}_https if #{acl_name(service)}_https_admin" : nil
 <<EOT
 \tuse_backend #{backend_name(service)}_https if #{acl_name(service)}_https
 \tuse_backend #{backend_name(service)}_https if #{acl_name(service)}_https_www
+#{admin_backend_text}
 EOT
   end
 
