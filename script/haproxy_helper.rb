@@ -364,7 +364,6 @@ backend #{backend_name(service)}_https
 \ttcp-response content accept if serverhello
 \tstick on payload_lv(43,1) if clienthello
 \tstick store-response payload_lv(43,1) if serverhello
-\toption ssl-hello-chk HEAD /health
 #{ service.healthy_nodes.map{|n| server_text_https(n) }.join }
 EOT
   end
