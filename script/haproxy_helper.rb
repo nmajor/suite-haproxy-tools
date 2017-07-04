@@ -15,8 +15,12 @@ class Service
     @nodes ||= nodes
   end
 
-  def host
-    host_map[name] || "#{name}.com"
+  def hosts
+    host_map[name] || ["#{name}.com", "www.#{name}.com"]
+  end
+
+  def host_apex
+    host_map[name] ? "#{name}.com" : host_map[name].map{|h| h.split('.').slice(1,2).join('.')}.uniq
   end
 
   def healthy_nodes
@@ -43,9 +47,7 @@ class Service
 
   def host_map
     {
-      "concept" => "api.concept.nmajor.com",
-      "dathobby" => "api.dathobby.com",
-      "emailgate" => "app.missionarymemoir.com",
+      "emailgate" => ["app.missionarymemoir.com", "admin.missionarymemoir.com"],
     }
   end
 
@@ -301,37 +303,31 @@ EOT
   end
 
   def frontend_service_text
-    ( service_list.map{|service| acl_text(service) } + service_list.map{|service| use_backend_text(service) } ).join
+    ( service_list.map{|service| acl_text(service) }.flatten + service_list.map{|service| use_backend_text(service) } ).join
   end
 
   def frontend_service_text_https
-    ( service_list.map{|service| acl_text_https(service) } + service_list.map{|service| use_backend_text_https(service) } ).join
+    ( service_list.map{|service| acl_text_https(service) }.flatten + service_list.map{|service| use_backend_text_https(service) } ).join
   end
 
   def acl_text service
-    "\tacl #{acl_name(service)} hdr_end(host) -i #{service.host}\n"
+    "\tacl #{acl_name(service.host_apex)} hdr_end(host) -i #{service.host_apex}\n"
   end
 
   def acl_text_https service
-  admin_acl = service.has_admin? ? "\tacl #{acl_name(service)}_https_admin req_ssl_sni -i admin.#{service.host}" : nil
-<<EOT
-\tacl #{acl_name(service)}_https req_ssl_sni -i #{service.host}
-\tacl #{acl_name(service)}_https_www req_ssl_sni -i www.#{service.host}
-#{admin_acl}
-EOT
+    service.hosts.map do |host|
+      "\tacl #{acl_name(host)}_https req_ssl_sni -i #{host}\n"
+    end
   end
 
   def use_backend_text service
-    "\tuse_backend #{backend_name(service)} if #{acl_name(service)}\n"
+    "\tuse_backend #{backend_name(service.host_apex)} if #{acl_name(service.host_apex)}\n"
   end
 
   def use_backend_text_https service
-    admin_backend_text =  service.has_admin? ? "\tuse_backend #{backend_name(service)}_https if #{acl_name(service)}_https_admin" : nil
-<<EOT
-\tuse_backend #{backend_name(service)}_https if #{acl_name(service)}_https
-\tuse_backend #{backend_name(service)}_https if #{acl_name(service)}_https_www
-#{admin_backend_text}
-EOT
+    service.hosts.map do |host|
+      "\tuse_backend #{backend_name(service.host_apex)}_https if #{acl_name(host)}_https\n"
+    end
   end
 
   def backend_service_text
@@ -344,7 +340,7 @@ EOT
 
   def backend_text service
 <<EOT
-backend #{backend_name(service)}
+backend #{backend_name(service.host_apex)}
 \tmode http
 \tbalance roundrobin
 \toption forwardfor
@@ -354,7 +350,7 @@ EOT
 
   def backend_text_https service
 <<EOT
-backend #{backend_name(service)}_https
+backend #{backend_name(service.host_apex)}_https
 \tmode tcp
 \tstick-table type binary len 32 size 30k expire 30m
 \tacl clienthello req_ssl_hello_type 1
@@ -378,12 +374,14 @@ EOT
     "\tserver #{service_node.id} #{service_node.address}:443 check port 80 inter 5000 fastinter 1000 fall 1 rise 1 weight 1\n"
   end
 
-  def backend_name service
-    "#{service.name}_backend"
+  def backend_name host
+    prefix = host.gsub(/\./, '_')
+    "#{prefix}_backend"
   end
 
-  def acl_name service
-    "#{service.name}_acl"
+  def acl_name host
+    prefix = host.gsub(/\./, '_')
+    "#{prefix}_acl"
   end
 end
 
