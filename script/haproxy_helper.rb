@@ -20,7 +20,7 @@ class Service
   end
 
   def host_apex
-    host_map[name] ? "#{name}.com" : host_map[name].map{|h| h.split('.').slice(1,2).join('.')}.uniq
+    !host_map[name].nil? ? "#{name}.com" : host_map[name].map{|h| h.split('.').slice(1,2).join('.')}.uniq
   end
 
   def healthy_nodes
