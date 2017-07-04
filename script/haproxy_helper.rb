@@ -303,11 +303,11 @@ EOT
   end
 
   def frontend_service_text
-    ( service_list.map{|service| acl_text(service) }.flatten + service_list.map{|service| use_backend_text(service) } ).join
+    ( service_list.map{|service| acl_text(service) } + service_list.map{|service| use_backend_text(service) } ).join
   end
 
   def frontend_service_text_https
-    ( service_list.map{|service| acl_text_https(service) }.flatten + service_list.map{|service| use_backend_text_https(service) } ).join
+    ( service_list.map{|service| acl_text_https(service) } + service_list.map{|service| use_backend_text_https(service) } ).join
   end
 
   def acl_text service
@@ -315,9 +315,10 @@ EOT
   end
 
   def acl_text_https service
-    service.hosts.map do |host|
+    text = service.hosts.map do |host|
       "\tacl #{acl_name(host)}_https req_ssl_sni -i #{host}\n"
     end
+    text.flatten
   end
 
   def use_backend_text service
@@ -325,9 +326,10 @@ EOT
   end
 
   def use_backend_text_https service
-    service.hosts.map do |host|
+    text = service.hosts.map do |host|
       "\tuse_backend #{backend_name(service.host_apex)}_https if #{acl_name(host)}_https\n"
     end
+    text.flatten
   end
 
   def backend_service_text
